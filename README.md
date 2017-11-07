@@ -54,12 +54,12 @@ RxJS는 이벤트 스트림과 데이터를 쉽게 만들고 다룰 수 있도�
 </head>
 <body>
   <div class="example">
-    <span>* zipcod 예시 : us 마운틴뷰 94040</span>
+    <span>* city 예시 : London</span>
   </div>
   <div id="app-container">
     <div id="form">
-      <label>Zip Code:</label>
-      <input type="text" id="zipcode-input">
+      <label>city:</label>
+      <input type="text" id="city-input">
       <button id="add-location">Add Location</button>
     </div>
   </div>
@@ -81,7 +81,7 @@ RxJS는 이벤트 스트림과 데이터를 쉽게 만들고 다룰 수 있도�
 
 ```javascript
 const appContainer = document.getElementById('app-container');
-const zipcodeInput = document.getElementById('zipcode-input');
+const cityInput = document.getElementById('city-input');
 const addLocationBtn = document.getElementById('add-location');
 
 const btnClickStream =
@@ -100,14 +100,14 @@ const btnClickStream =
 <br/>
 
 ```javascript
-const zipInputStream =
+const cityInputStream =
       Rx.Observable
-        .fromEvent(zipcodeInput, 'input')
+        .fromEvent(cityInput, 'input')
         .map(e => e.target.value)
-        .filter(zip => zip.length === 5)
+        .filter(city => city.length === 6)
         .forEach(val => {console.log('input value', val);});
 ```
- input에 입력될때 5글자 이상일때 호출되도록 이벤트 추가
+ input에 입력될때 6글자 이상일때 호출되도록 이벤트 추가
  
  콘솔 확인
 
@@ -116,11 +116,11 @@ const zipInputStream =
 
 
 ```javascript
-const zipcodeStream =
+const cityStream =
     btnClickStream
-      .withLatestFrom(zipInputStream, (click, zip) => zip)
+      .withLatestFrom(cityInputStream, (click, city) => city)
       .distinct()
-      .forEach(val => console.log('zipcodeStream val', val));
+      .forEach(val => console.log('cityStream val', val));
 ```
 
 > `distinct` 중복 입력된 값을 걸러줌
@@ -133,16 +133,16 @@ const zipcodeStream =
 https://home.openweathermap.org/api_keys 의 api를 사용하여 날씨 정보를 가져옴
 
 ```javascript
-  const getTemperature = zip =>
-    fetch(`http://api.openweathermap.org/data/2.5/weather?q=${zip},us&units=celsius&appid=APP_ID`)
+  const getTemperature = city =>
+    fetch(`http://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=APPID`)
       .then(res => res.json());
-  const zipTemperatureStreamFactory = zip =>
+  const cityTemperatureStreamFactory = city =>
     Rx.Observable
-      .fromPromise(getTemperature(zip))
-      .map(({ main: { temp } }) => ({ temp, zip }));
-      
-  zipcodeStream
-      .flatMap(zipTemperatureStreamFactory)
-      .forEach(({zip, temp}) => {console.log(temp);});
-```
+      .fromPromise(getTemperature(city))
+      .map(({ main: { temp } }) => ({ temp, city }));
 
+    cityStream
+      .flatMap(cityTemperatureStreamFactory)
+      .forEach(({city, temp}) => {console.log(city, temp);});
+```
+콘솔 확인 날씨 정보가 딱
