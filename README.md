@@ -75,6 +75,41 @@ RxJS는 이벤트 스트림과 데이터를 쉽게 만들고 다룰 수 있도�
 
 콘솔에 `true`가 나오면 설정끗!
 
+
+
 ### Script 작성
+
+```javascript
+const appContainer = document.getElementById('app-container');
+const zipcodeInput = document.getElementById('zipcode-input');
+const addLocationBtn = document.getElementById('add-location');
+
+const btnClickStream =
+   Rx.Observable
+    .fromEvent(addLocationBtn, 'click')
+    .map(() => true)
+    .forEach(val => { console.log('button click', val);});
+        
+```
+
+`addLocationBtn`에 이벤트를 추가
+
+콘솔이 찍히는걸 확인
+
+---
+
+```javascript
+const zipInputStream =
+      Rx.Observable
+        .fromEvent(zipcodeInput, 'input')
+        .map(e => e.target.value)
+        .filter(zip => zip.length === 5)
+        .forEach(val => {console.log('input value', val);});
+```
+ input에 입력될때 5글자 이상일때 호출되도록 이벤트 추가
+ 
+ 콘솔 확인
+
+---
 
 
