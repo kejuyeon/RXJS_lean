@@ -146,3 +146,77 @@ https://home.openweathermap.org/api_keys 의 api를 사용하여 날씨 정보�
       .forEach(({city, temp}) => {console.log(city, temp);});
 ```
 콘솔 확인 날씨 정보가 딱
+
+<br/>
+<br/>
+
+
+console.log 를 제거하고 element 추가
+
+
+```javascript
+const cityTemperatureStreamFactory = city =>
+    Rx.Observable
+      .fromPromise(getTemperature(city))
+      .map(({ main: { temp } }) => ({ temp, city }));
+
+    cityStream
+      .flatMap(cityTemperatureStreamFactory)
+      .forEach(({city, temp}) => {
+
+        const locationEle = document.createElement('div');
+        locationEle.id = `city-${city}`;
+        locationEle.classList.add('location-wather');
+
+        const cityEle = document.createElement('p');
+        cityEle.classList.add('city');
+        cityEle.innerText = city;
+
+        const tempEle = document.createElement('p');
+        tempEle.classList.add('temp');
+        tempEle.innerHTML = `${temp}&deg;C`;
+        
+        locationEle.appendChild(cityEle);
+        locationEle.appendChild(tempEle);
+        appContainer.appendChild(locationEle);
+
+        cityInput.value = '';
+
+      });
+```
+
+실행하기
+
+
+<br/>
+<br/>
+
+날씨를 새로고침 하도록 추가
+
+```javascript
+const replayCitysStream = new Rx.ReplaySubject();
+cityStream.subscribe(replayCitysStream);
+// 기억하여라!!
+```
+
+> `ReplaySubject` 스트림을 구독하고 스트림으로부터 받은 모든 값을 기억한다. 그리고 그것을 원할 때마다 반복할 수 있다.
+
+
+<br/>
+시간마다 호출하도록 추가
+10초마다 호출됨
+
+```javascript
+Rx.Observable
+  .interval(10000)
+  .flatMapLatest(() => replayCitysStream)
+  .flatMap(cityTemperatureStreamFactory)
+  .forEach(({ city, temp }) => {
+    console.log('Updating!', city, temp);
+    const locationEle = document.getElementById(`city-${city}`);
+    const tempEle = locationEle.querySelector('.temp');
+    tempEle.innerHTML = `${temp}&deg;C`;
+  });
+```
+
+pow실행er
