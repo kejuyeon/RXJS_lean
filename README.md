@@ -96,7 +96,8 @@ const btnClickStream =
 
 콘솔이 찍히는걸 확인
 
----
+<br/>
+<br/>
 
 ```javascript
 const zipInputStream =
@@ -110,6 +111,38 @@ const zipInputStream =
  
  콘솔 확인
 
----
+<br/>
+<br/>
 
+
+```javascript
+const zipcodeStream =
+    btnClickStream
+      .withLatestFrom(zipInputStream, (click, zip) => zip)
+      .distinct()
+      .forEach(val => console.log('zipcodeStream val', val));
+```
+
+> `distinct` 중복 입력된 값을 걸러줌
+
+콘솔 확인
+
+<br/>
+<br/>
+
+https://home.openweathermap.org/api_keys 의 api를 사용하여 날씨 정보를 가져옴
+
+```javascript
+  const getTemperature = zip =>
+    fetch(`http://api.openweathermap.org/data/2.5/weather?q=${zip},us&units=celsius&appid=APP_ID`)
+      .then(res => res.json());
+  const zipTemperatureStreamFactory = zip =>
+    Rx.Observable
+      .fromPromise(getTemperature(zip))
+      .map(({ main: { temp } }) => ({ temp, zip }));
+      
+  zipcodeStream
+      .flatMap(zipTemperatureStreamFactory)
+      .forEach(({zip, temp}) => {console.log(temp);});
+```
 
