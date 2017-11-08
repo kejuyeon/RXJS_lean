@@ -1,0 +1,151 @@
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>날씨검색</title>
+  <style>
+    body {
+      font-family: NanumGothic, AppleGothic, Myriad Pro, MalgunGothic, Arial;
+      text-align: center;
+      width: 900px;
+      margin: 0 auto;
+      color: #494949;
+    }
+    .example {
+      padding: 10px 0;
+    }
+    .location-wather {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin: 10px;
+      text-align: center;
+      display: inline-block;
+      width: 90px;
+    }
+    #add-location {
+      border: 0px solid #000;
+      background-color: #e8e8e8;
+      color: #494949;
+      font-size: 15px;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    input {
+      font-size: 12px;
+      padding: 6px;
+    }
+    #add-location:hover {
+      background-color: #ff7474;
+      color: #fff;
+      font-size: 15px;
+      border-radius: 4px;
+    }
+    .description {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="example">
+    <!-- <span>* zipcod 예시 : us 마운틴뷰 94040</span> -->
+    <span>* city 예시 : London</span>
+  </div>
+  <div id="app-container">
+    <div id="form">
+      <label>City:</label>
+      <input type="text" id="city-input">
+      <button id="add-location">Add Location</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/4.1.0/rx.all.min.js"></script>
+
+  <script>
+  // our code will go here
+    console.log('RxJS included?', !!Rx);
+
+    const appContainer = document.getElementById('app-container');
+    const cityInput = document.getElementById('city-input');
+    const addLocationBtn = document.getElementById('add-location');
+
+    const btnClickStream =
+      Rx.Observable
+        .fromEvent(addLocationBtn, 'click')
+        .map(() => true);
+
+    const cityInputStream =
+      Rx.Observable
+        .fromEvent(cityInput, 'input')
+        .map(e => e.target.value);
+
+
+
+    const cityStream =
+      btnClickStream
+        .withLatestFrom(cityInputStream, (click, city) => city)
+        .distinct();
+    // distinct 중복값 제거
+
+    const getTemperature = city =>
+      fetch(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=3d827903872f594964ac1831657cba8c&units=metric`)
+      .then(res => res.json());
+
+    const cityTemperatureStreamFactory = city =>
+      Rx.Observable
+        .fromPromise(getTemperature(city))
+        .map(({ main: { temp }, weather }) => ({ temp, weather, city }));
+
+    cityStream
+      .flatMap(cityTemperatureStreamFactory)
+      .forEach(({city, temp, weather}) => {
+
+        const locationEle = document.createElement('div');
+        locationEle.id = `city-${city}`;
+        locationEle.classList.add('location-wather');
+
+        const cityEle = document.createElement('p');
+        cityEle.classList.add('city');
+        cityEle.innerText = city.toUpperCase();
+
+        const tempEle = document.createElement('p');
+        tempEle.classList.add('temp');
+        tempEle.innerHTML = `${temp}&deg;C`;
+
+        const descriptionEle = document.createElement('p');
+        descriptionEle.classList.add('description');
+        descriptionEle.innerHTML = `${weather[0].description}`;
+
+        locationEle.appendChild(cityEle);
+        locationEle.appendChild(tempEle);
+        locationEle.appendChild(descriptionEle);
+        appContainer.appendChild(locationEle);
+
+        cityInput.value = '';
+
+      });
+
+
+    const replayCitysStream = new Rx.ReplaySubject();
+    cityStream.subscribe(replayCitysStream);
+
+    Rx.Observable
+      .interval(10000)
+      .flatMapLatest(() => replayCitysStream)
+      .flatMap(cityTemperatureStreamFactory)
+      .forEach(({ city, temp, weather }) => {
+        console.log('Updating!', city, temp, weather[0].description);
+
+        const locationEle = document.getElementById(`city-${city}`);
+
+        const tempEle = locationEle.querySelector('.temp');
+        tempEle.innerHTML = `${temp}&deg;C`;
+
+        const descriptionEle = locationEle.querySelector('.description');
+        descriptionEle.innerHTML = `${weather[0].description}`;
+      });
+
+  </script>
+
+
+</body>
+</html>
