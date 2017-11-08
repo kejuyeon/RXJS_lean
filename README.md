@@ -22,38 +22,43 @@ RxJS는 이벤트 스트림과 데이터를 쉽게 만들고 다룰 수 있도�
   <style>
     body {
       font-family: NanumGothic, AppleGothic, Myriad Pro, MalgunGothic, Arial;
-       margin: 20px;
+      text-align: center;
+      width: 900px;
+      margin: 0 auto;
+      color: #494949;
     }
     .example {
       padding: 10px 0;
     }
     .location-wather {
-      float: left;
       padding: 10px;
       border: 1px solid #ddd;
       border-radius: 4px;
       margin: 10px;
       text-align: center;
+      display: inline-block;
+      width: 90px;
     }
     #add-location {
-      border: 1px solid #e8e8e8;
-      background-color: #fff;
+      border: 0px solid #000;
+      background-color: #e8e8e8;
       color: #494949;
       font-size: 15px;
-      padding: 5px;
+      padding: 10px;
       border-radius: 4px;
     }
     input {
       font-size: 12px;
-      padding: 5px;
+      padding: 6px;
     }
     #add-location:hover {
-      border: 1px solid #d4bd93;
-      background-color: #fde2b0;
-      color: #000;
+      background-color: #ff7474;
+      color: #fff;
       font-size: 15px;
-      padding: 5px;
       border-radius: 4px;
+    }
+    .description {
+      font-weight: bold;
     }
   </style>
 </head>
